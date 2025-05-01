@@ -1,7 +1,7 @@
 %include "test_utils.asm"
 
 section .data
-    string_address db INPUT_STRING
+    string_address db INPUT_STRING, 0 ; null-terminator
 
 section .text
 

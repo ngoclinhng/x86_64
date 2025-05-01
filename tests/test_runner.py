@@ -167,6 +167,10 @@ if __name__ == "__main__":
             TestCase(
                 defines={"INPUT_STRING": "' '"},
                 checker=lambda _, c: c == 1
+            ),
+            TestCase(
+                defines={"INPUT_STRING": "''"},
+                checker=lambda _, c: c == 0
             )
         ]
     }
