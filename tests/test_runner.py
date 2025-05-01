@@ -205,8 +205,16 @@ if __name__ == "__main__":
                 checker=lambda _, c: c == 3
             ),
             TestCase(
-                defines={"INPUT_STRING": "' 12'", "OUTPUT_NUMBER": 12},
+                defines={"INPUT_STRING": "'1 2 3'", "OUTPUT_NUMBER": 1},
+                checker=lambda _, c: c == 1
+            ),
+            TestCase(
+                defines={"INPUT_STRING": "'012'", "OUTPUT_NUMBER": 12},
                 checker=lambda _, c: c == 3
+            ),
+            TestCase(
+                defines={"INPUT_STRING": "' 12'", "OUTPUT_NUMBER": 0},
+                checker=lambda _, c: c == 0
             ),
             TestCase(
                 defines={"INPUT_STRING": "'12ab'", "OUTPUT_NUMBER": 12},
@@ -218,6 +226,10 @@ if __name__ == "__main__":
             ),
             TestCase(
                 defines={"INPUT_STRING": "'abc'", "OUTPUT_NUMBER": 0},
+                checker=lambda _, c: c == 0
+            ),
+            TestCase(
+                defines={"INPUT_STRING": "'a 1'", "OUTPUT_NUMBER": 0},
                 checker=lambda _, c: c == 0
             )
         ]

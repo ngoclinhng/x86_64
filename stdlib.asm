@@ -7,7 +7,7 @@ global exit
 global string_length
 global print_string, print_char, print_newline
 global print_uint, print_int
-global parse_uint
+global parse_uint, parse_uint
 
 ;; exit(rdi: exit_code)
 exit:
@@ -91,37 +91,25 @@ print_int:
     jmp print_uint
 
 ;; Input: RDI = pointer to null-terminated string
-;; Output: RAX = parsed number (0 if no digits found)
-;;         RDX = count of characters parsed
-;; Clobbers: RCX, RSI
+;; Output:
+;;   - RAX = parsed number (0 if no digits found)
+;;   - RDX = parsed digits
 parse_uint:
     xor rax, rax                ; Clear result (rax = 0)
     xor rcx, rcx                ; Clear temporary digit storage
     mov rsi, rdi                ; Copy string pointer to rsi
 
 .loop:
-    mov cl, byte [rsi]          ; Load current char
-    test cl, cl                 ; Check for null terminator
-    jz .end                     ; If null, we're done
+    movzx rcx, byte [rsi]       ; Load current char
 
-    ; Skip whitespaces
-    cmp cl, 9                   ; Skip HT \t
-    je .next_char
-    cmp cl, 10                  ; Skip new line \n
-    je .next_char
-    cmp cl, 13                  ; Skip CR \r
-    je .next_char
-    cmp cl, 32                  ; Skip SPACE
-    je .next_char
-
-    ; Check if char is a digit ('0' - '9')
+    ; Check if current char is a digit ('0' - '9')
     cmp cl, '0'
     jb .end
     cmp cl, '9'
     ja .end
 
     ; Convert ASCII digit to value
-    sub cl, '0'
+    and cl, 0x0F
 
     ; Multiple current result by 10 and add new digit
     ; rax = rax * 10 + rcx
@@ -129,13 +117,17 @@ parse_uint:
     add rax, rax                ; rax *= 2 (total 10x)
     add rax, rcx                ; Add new digit
 
-.next_char:
+    ; Move to next char
     inc rsi
     jmp .loop
     
 .end:
     sub rsi, rdi                ; Total characters processed
     mov rdx, rsi                ; Return count in rdx
+    ret
+
+;; TODO
+parse_int:
     ret
     
     
