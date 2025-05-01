@@ -55,8 +55,6 @@ print_newline:
 print_uint:
 	mov rsi, rsp
 	sub rsp, 24
-	dec rsi
-	mov byte [rsi], 0
 	xor rcx, rcx	
 	mov r8, 10
 	mov rax, rdi
