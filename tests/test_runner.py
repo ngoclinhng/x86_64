@@ -192,6 +192,34 @@ if __name__ == "__main__":
                 defines={"INPUT_STRING": "''"},
                 checker=lambda _, c: c == 0
             )
+        ],
+
+        # --- parse_uint ---
+        "parse_uint_test": [
+            TestCase(
+                defines={"INPUT_STRING": "'0'", "OUTPUT_NUMBER": 0},
+                checker=lambda _, c: c == 1
+            ),
+            TestCase(
+                defines={"INPUT_STRING": "'123'", "OUTPUT_NUMBER": 123},
+                checker=lambda _, c: c == 3
+            ),
+            TestCase(
+                defines={"INPUT_STRING": "' 12'", "OUTPUT_NUMBER": 12},
+                checker=lambda _, c: c == 3
+            ),
+            TestCase(
+                defines={"INPUT_STRING": "'12ab'", "OUTPUT_NUMBER": 12},
+                checker=lambda _, c: c == 2
+            ),
+            TestCase(
+                defines={"INPUT_STRING": "''", "OUTPUT_NUMBER": 0},
+                checker=lambda _, c: c == 0
+            ),
+            TestCase(
+                defines={"INPUT_STRING": "'abc'", "OUTPUT_NUMBER": 0},
+                checker=lambda _, c: c == 0
+            )
         ]
     }
 
