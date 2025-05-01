@@ -1,11 +1,12 @@
-section .data	
-	__digits db '0123456789'
+section .rodata	
+	digits db '0123456789'
 	
 section .text
 
-global exit, string_length, print_string, print_char, print_newline
+global exit
+global string_length
+global print_string, print_char, print_newline
 global print_uint
-	
 
 ;; exit(rdi: exit_code)
 exit:
@@ -56,13 +57,13 @@ print_uint:
 	sub rsp, 24
 	dec rsi
 	mov byte [rsi], 0
-	mov rcx, 1
+	xor rcx, rcx	
 	mov r8, 10
 	mov rax, rdi
 .loop:
 	xor rdx, rdx
 	div r8
-	mov dl, [__digits + rdx]
+	mov dl, [digits + rdx]
 	dec rsi
 	mov [rsi], dl
 	inc rcx
