@@ -1,4 +1,5 @@
 #!/usr/bin/python3
+import sys
 import subprocess
 import argparse
 from pathlib import Path
@@ -11,6 +12,25 @@ LD = "ld"
 SRC_DIR = Path("../")
 STDLIB = SRC_DIR / "stdlib.o"
 TEST_DIR = Path(".")
+
+class Colors:
+    GREEN = "\033[92m"
+    RED = "\033[91m"
+    BLUE = "\033[94m"
+    END = "\033[0m"
+
+    @staticmethod
+    def green(text: str) -> str:
+        return f"{Colors.GREEN}{text}{Colors.END}"
+
+    @staticmethod
+    def red(text: str) -> str:
+        return f"{Colors.RED}{text}{Colors.END}"
+
+    @staticmethod
+    def blue(text: str) -> str:
+        return f"{Colors.BLUE}{text}{Colors.END}"
+    
 
 @dataclass
 class TestCase:
@@ -81,20 +101,21 @@ def run_tests(test_configs: Dict[str, list[TestCase]], cleanup: bool = True,
     compile_stdlib(force_stdlib)
     
     for test_name, cases in test_configs.items():
-        print(f"\nTesting {test_name}:")
+        print(f"\nTesting {Colors.blue(test_name)}:")
         
         for i, test_case in enumerate(cases, 1):
             output, exitcode = compile_and_run(test_name, test_case)
             if test_case.checker(output, exitcode):
-                print(f"  Case {i}: PASS")
+                print(f"  Case {i}: {Colors.green('PASS')}")
             else:
-                print(f"  Case {i}: FAIL (output={output}, exitcode={exitcode})")
-                exit(1)
+                print(f"  Case {i}: {Colors.red('FAIL')} "
+                      f"(output={output}, exitcode={exitcode})")
+                sys.exit(1)
 
         if cleanup:
             clean_build_artifacts(test_name)
 
-    print("\nAll tests passed!")
+    print(f"\n{Colors.green('All tests passed!')}")
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="NASM Test Runner")
@@ -122,6 +143,14 @@ if __name__ == "__main__":
             TestCase(
                 defines={"TEST_VALUE": "12345"},
                 checker=lambda o, c: o == "12345" and c == 0
+            ),
+            TestCase(
+                defines={"TEST_VALUE": "-1"},
+                checker=lambda o, c: o == f"{(1 << 64) - 1}" and c == 0
+            ),
+            TestCase(
+                defines={"TEST_VALUE": "0"},
+                checker=lambda o, c: o == "0" and c == 0
             )
         ]
     }
