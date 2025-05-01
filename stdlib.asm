@@ -6,7 +6,7 @@ section .text
 global exit
 global string_length
 global print_string, print_char, print_newline
-global print_uint
+global print_uint, print_int
 
 ;; exit(rdi: exit_code)
 exit:
@@ -75,6 +75,21 @@ print_uint:
 .done:
 	add rsp, 24
 	ret
+
+;; print_int(rdi: number)
+print_int:
+    test rdi, rdi
+    jns print_uint
+    
+    push rdi
+    mov dil, '-'
+    call print_char
+    pop rdi
+    
+    neg rdi
+    jmp print_uint
+    
+    
 	
 	
 	

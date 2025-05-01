@@ -154,6 +154,26 @@ if __name__ == "__main__":
             )
         ],
 
+        # --- print_int ---
+        "print_int_test": [
+            TestCase(
+                defines={"TEST_VALUE": "0"},
+                checker=lambda o, c: o == "0" and c == 0
+            ),
+            TestCase(
+                defines={"TEST_VALUE": "-1"},
+                checker=lambda o, c: o == "-1" and c == 0
+            ),
+            TestCase(
+                defines={"TEST_VALUE": "123"},
+                checker=lambda o, c: o == "123" and c == 0
+            ),
+            TestCase(
+                defines={"TEST_VALUE": "-123"},
+                checker=lambda o, c: o == "-123" and c == 0
+            )
+        ],
+
         # --- string_length ---
         "string_length_test": [
             TestCase(
