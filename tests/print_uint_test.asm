@@ -1,6 +1,6 @@
 section .text
 
-extern print_uint, print_newline, exit
+extern print_uint, exit
 
 global _start
 _start:
