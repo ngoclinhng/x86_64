@@ -152,6 +152,22 @@ if __name__ == "__main__":
                 defines={"TEST_VALUE": "0"},
                 checker=lambda o, c: o == "0" and c == 0
             )
+        ],
+
+        # --- string_length ---
+        "string_length_test": [
+            TestCase(
+                defines={"INPUT_STRING": "'abc'"},
+                checker=lambda _, c: c == 3
+            ),
+            TestCase(
+                defines={"INPUT_STRING": "'Hello, world!'"},
+                checker=lambda _, c: c == 13
+            ),
+            TestCase(
+                defines={"INPUT_STRING": "' '"},
+                checker=lambda _, c: c == 1
+            )
         ]
     }
 
