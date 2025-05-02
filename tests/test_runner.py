@@ -232,6 +232,58 @@ if __name__ == "__main__":
                 defines={"INPUT_STRING": "'a 1'", "OUTPUT_NUMBER": 0},
                 checker=lambda _, c: c == 0
             )
+        ],
+
+        # --- parse_int_test ---
+        "parse_int_test": [
+            TestCase(
+                defines={"INPUT_STRING": "'0'", "OUTPUT_NUMBER": 0},
+                checker=lambda _, c: c == 1            
+            ),
+            TestCase(
+                defines={"INPUT_STRING": "'1'", "OUTPUT_NUMBER": 1},
+                checker=lambda _, c: c == 1            
+            ),
+            TestCase(
+                defines={"INPUT_STRING": "'-1'", "OUTPUT_NUMBER": -1},
+                checker=lambda _, c: c == 2
+            ),
+            TestCase(
+                defines={"INPUT_STRING": "'+1'", "OUTPUT_NUMBER": 1},
+                checker=lambda _, c: c == 2
+            ),
+            TestCase(
+                defines={"INPUT_STRING": "'123'", "OUTPUT_NUMBER": 123},
+                checker=lambda _, c: c == 3
+            ),
+            TestCase(
+                defines={"INPUT_STRING": "'-123'", "OUTPUT_NUMBER": -123},
+                checker=lambda _, c: c == 4
+            ),
+            TestCase(
+                defines={"INPUT_STRING": "'+123'", "OUTPUT_NUMBER": 123},
+                checker=lambda _, c: c == 4
+            ),
+            TestCase(
+                defines={"INPUT_STRING": "''", "OUTPUT_NUMBER": 0},
+                checker=lambda _, c: c == 0
+            ),
+            TestCase(
+                defines={"INPUT_STRING": "' '", "OUTPUT_NUMBER": 0},
+                checker=lambda _, c: c == 0
+            ),
+            TestCase(
+                defines={"INPUT_STRING": "'abc'", "OUTPUT_NUMBER": 0},
+                checker=lambda _, c: c == 0
+            ),
+            TestCase(
+                defines={"INPUT_STRING": "'1 b 2'", "OUTPUT_NUMBER": 1},
+                checker=lambda _, c: c == 1
+            ),
+            TestCase(
+                defines={"INPUT_STRING": "'-11 a b'", "OUTPUT_NUMBER": -11},
+                checker=lambda _, c: c == 3
+            )
         ]
     }
 

@@ -7,7 +7,7 @@ global exit
 global string_length
 global print_string, print_char, print_newline
 global print_uint, print_int
-global parse_uint, parse_uint
+global parse_uint, parse_int
 
 ;; exit(rdi: exit_code)
 exit:
@@ -93,10 +93,10 @@ print_int:
 ;; Input: RDI = pointer to null-terminated string
 ;; Output:
 ;;   - RAX = parsed number (0 if no digits found)
-;;   - RDX = parsed digits
+;;   - RDX = chars parsed
 parse_uint:
     xor rax, rax                ; Clear result (rax = 0)
-    xor rcx, rcx                ; Clear temporary digit storage
+    xor rcx, rcx                ; Clear temporary digits storage
     mov rsi, rdi                ; Copy string pointer to rsi
 
 .loop:
@@ -126,9 +126,43 @@ parse_uint:
     mov rdx, rsi                ; Return count in rdx
     ret
 
-;; TODO
+;; Input: RDI = null-terminated string
+;; Output:
+;;   - RAX = parsed number (0 if invalid)
+;;   - RDX = chars parsed including sign char ('+'/'-') if present
 parse_int:
-    ret
+    movzx rcx, byte [rdi]
+
+    cmp cl, '+'
+    je .plus
+    cmp cl, '-'
+    je .minus
+    jmp parse_uint
+
+.plus:
+    push 0
+    jmp .digits
+    
+.minus:
+    push -1
+    
+.digits:
+    inc rdi
+    call parse_uint
+    pop rcx
+
+    test rdx, rdx
+    jz .done
+    inc rdx
+
+    test rcx, rcx
+    jns .done
+    neg rax
+
+.done:
+    ret        
+    
+    
     
     
 	
