@@ -284,6 +284,35 @@ if __name__ == "__main__":
                 defines={"INPUT_STRING": "'-11 a b'", "OUTPUT_NUMBER": -11},
                 checker=lambda _, c: c == 3
             )
+        ],
+
+        # --- read_char --- #
+        "read_char_test": [
+            TestCase(
+                stdin="a",
+                defines={"EXPECTED": "'a'"},
+                checker=lambda _, c: c == 0
+            ),
+            TestCase(
+                stdin="0",
+                defines={"EXPECTED": "'0'"},
+                checker=lambda _, c: c == 0
+            ),
+            TestCase(
+                stdin="123",
+                defines={"EXPECTED": "'1'"},
+                checker=lambda _, c: c == 0
+            ),
+            TestCase(
+                stdin="A b c",
+                defines={"EXPECTED": "'A'"},
+                checker=lambda _, c: c == 0
+            ),
+            TestCase(
+                stdin="",
+                defines={"EXPECTED": 0},
+                checker=lambda _, c: c == 0
+            )
         ]
     }
 

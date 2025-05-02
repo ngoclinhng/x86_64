@@ -8,6 +8,7 @@ global string_length
 global print_string, print_char, print_newline
 global print_uint, print_int
 global parse_uint, parse_int
+global read_char
 
 ;; exit(rdi: exit_code)
 exit:
@@ -160,7 +161,23 @@ parse_int:
     neg rax
 
 .done:
-    ret        
+    ret
+
+;; Reads one character (1 byte) from stdin
+;; Returns:
+;;   - RAX = character read or 0 on EOF/error
+read_char:
+    push 0
+
+    ; sys_read(fd=0, buf=rsp, count=1)
+    xor rax, rax
+    xor rdi, rdi
+    mov rsi, rsp
+    mov rdx, 1
+    syscall
+
+    pop rax
+    ret
     
     
     
