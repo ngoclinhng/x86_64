@@ -8,7 +8,8 @@ global string_length
 global print_string, print_char, print_newline
 global print_uint, print_int
 global parse_uint, parse_int
-global read_char
+global read_char, read_word
+global string_compare
 
 ;; exit(rdi: exit_code)
 exit:
@@ -91,10 +92,12 @@ print_int:
     neg rdi
     jmp print_uint
 
-;; Input: RDI = pointer to null-terminated string
-;; Output:
-;;   - RAX = parsed number (0 if no digits found)
-;;   - RDX = chars parsed
+;; Parses an 64-bit unsigned integer from a null-terminated string.
+;; Arguments:
+;;   rdi - pointer to null-terminated string
+;; Returns:    
+;;   rax - parsed number (0 if no digits found)
+;;   rdx - chars parsed
 parse_uint:
     xor rax, rax                ; Clear result (rax = 0)
     xor rcx, rcx                ; Clear temporary digits storage
@@ -127,10 +130,12 @@ parse_uint:
     mov rdx, rsi                ; Return count in rdx
     ret
 
-;; Input: RDI = null-terminated string
-;; Output:
-;;   - RAX = parsed number (0 if invalid)
-;;   - RDX = chars parsed including sign char ('+'/'-') if present
+;; Parses an 64-bit signed integer from a null-terminated string.    
+;; Arguments:
+;;   rdi - null-terminated string
+;; Returns:
+;;   rax - parsed number (0 if invalid)
+;;   rdx - chars parsed including sign char ('+'/'-') if present
 parse_int:
     movzx rcx, byte [rdi]
 
@@ -165,7 +170,7 @@ parse_int:
 
 ;; Reads one character (1 byte) from stdin
 ;; Returns:
-;;   - RAX = character read or 0 on EOF/error
+;;   rax - character read or 0 on EOF/error
 read_char:
     push 0
 
@@ -178,10 +183,49 @@ read_char:
 
     pop rax
     ret
+
+;; Reads next word from stdin.
+;; Arguments:
+;;   rdi - buffer address
+;;   rsi - buffer size
+;; Returns:
+;;   rax - buffer address on success, 0 if word is too big
+read_word:
+    ; TODO
+    ret
+
+;; Compares two null-terminated strings
+;; Arguments:
+;;  rdi - pointer to first string (s1)
+;;  rsi - pointer to second string (s2)
+;; Returns:
+;;  rax = comprison result (0 if equal, positive if s1 > s2,
+;;        negative of s1 < s2)
+string_compare:
+    pushfq                      ; Save rflags (including DF)
+    cld                         ; Clear direction flag (DF = 0 for forward)
+
+.loop:
+    cmpsb                       ; Compare byte at [rsi] with [rdi], increment
+    jne .return_diff            ; both.
+
+    test byte [rdi - 1], 0xFF   ; Check if last byte was null
+    jz .return_equal
+
+    jmp .loop
+
+.return_diff:
+    mov rax, -1                 ; Default -1 (s1 < s2)
+    jc .greater                 ; If CF = 1, s2 - s1 < 0
+    popfq                       ; Restore rflags
+    ret    
     
-    
-    
-    
-	
-	
-	
+.greater:
+    mov rax, 1                  ; Return 1 (s1 > s2)
+    popfq                       ; Restore rflags
+    ret
+
+.return_equal:
+    xor rax, rax                ; Return 0 (s1 = s2)
+    popfq                       ; Restore rflags
+    ret

@@ -286,7 +286,7 @@ if __name__ == "__main__":
             )
         ],
 
-        # --- read_char --- #
+        # --- read_char ---
         "read_char_test": [
             TestCase(
                 stdin="a",
@@ -312,6 +312,38 @@ if __name__ == "__main__":
                 stdin="",
                 defines={"EXPECTED": 0},
                 checker=lambda _, c: c == 0
+            )
+        ],
+
+        # --- string_compare ---
+        "string_compare_test": [
+            TestCase(
+                defines={"STR1": "''", "STR2": "''"},
+                checker=lambda _, c: c == 0
+            ),
+            TestCase(
+                defines={"STR1": "'Hello, world!'", "STR2": "'Hello, world!'"},
+                checker=lambda _, c: c == 0
+            ),
+            TestCase(
+                defines={"STR1": "'abc'", "STR2": "'abc'"},
+                checker=lambda _, c: c == 0
+            ),
+            TestCase(
+                defines={"STR1": "'abd'", "STR2": "'abc'"},
+                checker=lambda _, c: c == 1
+            ),
+            TestCase(
+                defines={"STR1": "'abc'", "STR2": "'abd'"},
+                checker=lambda _, c: c == 255
+            ),
+            TestCase(
+                defines={"STR1": "'ab'", "STR2": "'abc'"},
+                checker=lambda _, c: c == 255
+            ),
+            TestCase(
+                defines={"STR1": "'abc'", "STR2": "'ab'"},
+                checker=lambda _, c: c == 1
             )
         ]
     }
