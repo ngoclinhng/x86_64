@@ -184,14 +184,149 @@ read_char:
     pop rax
     ret
 
-;; Reads next word from stdin.
+;; Reads a word from stdin into a buffer, skipping leading whitespace
+;; characters, and null-terminates the word.
+;;
 ;; Arguments:
-;;   rdi - buffer address
-;;   rsi - buffer size
+;;   rdi: Address of the output buffer (char*)
+;;   rsi: Size of the buffer in bytes, including space for null terminator.
+;;
 ;; Returns:
-;;   rax - buffer address on success, 0 if word is too big
+;;   rax: Address of the buffer (rdi) if a word is successfully read and
+;;        stored 0 if:
+;;        - Buffer size < 2 (no room for char + '\0')
+;;        - Word is too long for buffer (excluding null terminator)    
+;;        - EOF or error occurs while reading from stdin
+;;
+;; Behavior:
+;;   - Skips leading whitespace: space (0x20), tab (0x09), newline (0x0A),
+;;     carriage return (0x0D).
+;;   - Reads a word (sequence of characters excluding space) until a space,
+;;     EOF, or error.
+;;   - Null-terminates the word in the buffer.
+;;   - Uses a 64-byte stack-allocated buffer to minimize sys_read calls.
 read_word:
-    ; TODO
+    push rbx                    ; Callee-saved, used for counter
+    push r12                    ; Callee-saved, used for buffer address
+    push r13                    ; Callee-saved, used for buffer size
+    push r14                    ; Callee-saved, used for buffer position
+    push r15                    ; Callee-saved, used for bytes read
+
+    sub rsp, 64                 ; Allocate 64-byte buffer on stack
+
+    xor rbx, rbx                ; Initialize character count
+    mov r12, rdi                ; Output buffer address
+    mov r13, rsi                ; Output buffer size
+    xor r14, r14                ; Initialize buffer position (pos)
+    xor r15, r15                ; Initialzie bytes read (bytes_read)
+
+    ; Check if buffer size is too small
+    ; size < 2, no room for 1 char + '\0'
+    cmp r13, 2
+    jl .too_small
+
+.skip_whitespace:
+    ; Check if buffer is exhausted (pos >= bytes_read)
+    cmp r14, r15
+    jge .refill_buffer
+
+    ; Load next byte from buffer
+    mov al, byte [rsp + r14]
+    inc r14                     ; Advance position
+
+    ; Check if byte is whitespace: Space (0x20), Tab (0x09), Newline (0x0A),
+    ; or Carriage return (0x0D)
+    cmp al, 0x20
+    je .skip_whitespace
+    cmp al, 0x09
+    je .skip_whitespace
+    cmp al, 0x0A
+    je .skip_whitespace
+    cmp al, 0x0D
+    je .skip_whitespace
+
+    ; Non-whitespace character found (al):
+    ;   - Check for buffer overflow
+    ;   - Store the char (al)
+    ;   - Read next byte. Whitespace? YES - end, NO - repeat
+.store_char:
+    ; Check if buffer has space for null terminator
+    mov rcx, r13                ; rcx = input buffer size
+    dec rcx                     ; rcx -= 1
+    cmp rbx, rcx                ; is current char count >= size - 1
+    jae .too_big                ; Buffer overflow
+
+    ; Store char (al)
+    mov byte [r12 + rbx], al
+    inc rbx
+
+    ; Check if buffer is exhausted before reading next byte
+    cmp r14, r15
+    jge .refill_buffer
+
+    ; Load next byte from buffer into al and check for
+    ; termination
+.read_char:
+    mov al, byte [rsp + r14]    ; Load next byte
+    inc r14
+
+    ; Check if byte is whitespace: Space (0x20), Tab (0x09), Newline (0x0A),
+    ; or Carriage return (0x0D). If it is, we're done.
+    cmp al, 0x20
+    je .end_word
+    cmp al, 0x09
+    je .end_word
+    cmp al, 0x0A
+    je .end_word
+    cmp al, 0x0D
+    je .end_word
+
+    ; Else store the char and continue
+    jmp .store_char
+
+.refill_buffer:
+    ; Read up to 64 bytes from stdin
+    xor rax, rax                ; sys_read (0)
+    xor rdi, rdi                ; stdin (0)
+    mov rsi, rsp                ; buffer address
+    mov rdx, 64                 ; Read up to 64 bytes
+    syscall
+
+    ; Check for error or EOF (rax <= 0)
+    test rax, rax
+    jle .eof_or_error
+
+    ; Update byte_reads and reset pos
+    mov r15, rax                ; bytes_read = rax
+    xor r14, r14                ; pos = 0
+
+    ; Either jump back to .skip_whitespace (count = 0)
+    ; or .read_word (count > 0)
+    test rbx, rbx
+    jz .skip_whitespace
+    jmp .read_char
+
+.too_small:
+.too_big:
+.eof_or_error:
+    xor rax, rax                ; Return = 0
+    add rsp, 64                 ; Deallocate stack buffer
+    pop r15                     ; Restore r15
+    pop r14                     ; Restore r14
+    pop r13                     ; Restore r13
+    pop r12                     ; Restore r12
+    pop rbx                     ; Restore rbx
+    ret
+
+.end_word:
+    mov byte [r12 + rbx], 0     ; Null terminator
+    mov rax, r12                ; Address of the buffer
+    add rsp, 64                 ; Deallocate stack buffer
+    pop r15                     ; Restore r15
+    pop r14                     ; Restore r14
+    pop r13                     ; Restore r13
+    pop r12                     ; Restore r12
+    pop rbx                     ; Restore rbx
     ret
 
 ;; Compares two null-terminated strings
@@ -228,4 +363,4 @@ string_compare:
 .return_equal:
     xor rax, rax                ; Return 0 (s1 = s2)
     popfq                       ; Restore rflags
-    ret
+    ret    

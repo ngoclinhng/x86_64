@@ -315,6 +315,50 @@ if __name__ == "__main__":
             )
         ],
 
+        # --- read_word ---
+        "read_word_test": [
+            TestCase(
+                stdin="To be, or not to be",
+                defines={"BUF_SIZE": 3, "EXPECTED": "'To'"},
+                checker=lambda _, c: c == 0
+            ),
+            TestCase(
+                stdin="To be, or not to be",
+                defines={"BUF_SIZE": 4, "EXPECTED": "'To'"},
+                checker=lambda _, c: c == 0
+            ),
+            TestCase(
+                stdin="To be, or not to be",
+                defines={"BUF_SIZE": 2, "EXPECTED": "''"},
+                checker=lambda _, c: c == 1
+            ),
+            TestCase(
+                stdin="Hello, world!",
+                defines={"BUF_SIZE": 7, "EXPECTED": "'Hello,'"},
+                checker=lambda _, c: c == 0
+            ),
+            TestCase(
+                stdin=" Hello, world!",
+                defines={"BUF_SIZE": 7, "EXPECTED": "'Hello,'"},
+                checker=lambda _, c: c == 0
+            ),
+            TestCase(
+                stdin="\nHello, world!",
+                defines={"BUF_SIZE": 7, "EXPECTED": "'Hello,'"},
+                checker=lambda _, c: c == 0
+            ),
+            TestCase(
+                stdin="\tHello, world!",
+                defines={"BUF_SIZE": 7, "EXPECTED": "'Hello,'"},
+                checker=lambda _, c: c == 0
+            ),
+            TestCase(
+                stdin="Hello, world!",
+                defines={"BUF_SIZE": 6, "EXPECTED": "''"},
+                checker=lambda _, c: c == 1
+            )
+        ],
+
         # --- string_compare ---
         "string_compare_test": [
             TestCase(
