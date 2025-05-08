@@ -10,6 +10,7 @@ global print_uint, print_int
 global parse_uint, parse_int
 global read_char, read_word
 global string_compare
+global to_lower_char, to_upper_char, to_lower_string, to_upper_string
 
 ;; exit(rdi: exit_code)
 exit:
@@ -184,6 +185,9 @@ read_char:
     pop rax
     ret
 
+;; FIXME: the current implementation is buggy since it consumes stdin
+;; more than what it should!
+;;
 ;; Reads a word from stdin into a buffer, skipping leading whitespace
 ;; characters, and null-terminates the word.
 ;;
@@ -363,4 +367,96 @@ string_compare:
 .return_equal:
     xor rax, rax                ; Return 0 (s1 = s2)
     popfq                       ; Restore rflags
-    ret    
+    ret
+
+;; Converts a given character to lowercase
+;; Arguments:
+;;  dil: character to convert
+;; Returns:
+;;  al: lowercase character (if A-Z, else unchanged)
+to_lower_char:
+    movzx rax, dil
+    
+    cmp al, 'A'
+    jb .done
+
+    cmp al, 'Z'
+    ja .done
+    
+    or al, 0x20                 ; Set bit 5 to 1
+    
+.done:
+    ret
+
+;; Converts a given character to uppercase
+;; Arguments:
+;;  dil: character to convert
+;; Returns:
+;;  al: uppercase character (if a-z, else unchanged)
+to_upper_char:
+    movzx rax, dil
+
+    cmp al, 'a'
+    jb .done
+    
+    cmp al, 'z'
+    ja .done
+    
+    and al, 0xDF                ; Clear bit 5
+    
+.done:
+    ret
+
+;; Converts a given null-terminated string to lowercase
+;; Arguments:
+;;  rdi: pointer to the string
+;; Returns:
+;;  None (modifies the input string in place)
+to_lower_string:
+    movzx rax, byte [rdi]
+
+    test al, al                 ; Check for null-terminator
+    jz .done
+
+    cmp al, 'A'
+    jb .next_char
+
+    cmp al, 'Z'
+    ja .next_char
+
+    or al, 0x20                 ; Set 5-th bit to 1
+    mov byte [rdi], al          ; Store the lowercase char back
+    
+.next_char:
+    inc rdi
+    jmp to_lower_string
+    
+.done:
+    ret
+
+;; Converts a given null-terminated string to uppercase
+;; Arguments:
+;;  rdi: pointer to the string
+;; Returns:
+;;  None (modifies the input string in place)
+to_upper_string:
+    movzx rax, byte [rdi]
+
+    test al, al                 ; Check for null-terminator
+    jz .done
+
+    cmp al, 'a'
+    jb .next_char
+
+    cmp al, 'z'
+    ja .next_char
+
+    and al, 0xDF                ; Clear 5-th bit
+    mov byte [rdi], al          ; Store the uppercase char back
+
+.next_char:
+    inc rdi
+    jmp to_upper_string    
+
+.done:
+    ret
